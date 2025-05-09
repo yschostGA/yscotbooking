@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการ OT รถ</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --danger: #dc2626;
+            --success: #10b981;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --normal-bg: #e0f2fe;
+            --normal-cell: #f0f9ff;
+            --saturday-bg: #dcfce7;
+            --saturday-cell: #ecfdf5;
+            --sunday-bg: #ffedd5;
+            --sunday-cell: #fff7ed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0e7ff, #bfdbfe);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 4rem auto;
+        }
+
+        h1, h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        h1::after, h2::after {
+            content: '';
+            display: block;
+            width: 4rem;
+            height: 3px;
+            background: var(--secondary);
+            margin: 0.5rem auto;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: #f9fafb;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ot-type-btn {
+            background: var(--accent);
+            margin-right: 1rem;
+        }
+
+        .ot-type-btn:hover {
+            background: #d97706;
+        }
+
+        .delete-btn, .clear-btn, .logout-btn {
+            background: var(--danger);
+        }
+
+        .delete-btn:hover, .clear-btn:hover, .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        .copy-btn {
+            background: var(--accent);
+            margin-right: 1rem;
+        }
+
+        .copy-btn:hover {
+            background: #d97706;
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        .copy-btn.copied:hover {
+            background: #059669;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: var(--card-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        th.normal-ot {
+            background: var(--normal-bg);
+            color: var(--text);
+        }
+
+        th.saturday-ot {
+            background: var(--s kada-bg);
+            color: var(--text);
+        }
+
+        th.sunday-ot {
+            background: var(--sunday-bg);
+            color: var(--text);
+        }
+
+        td.normal-ot {
+            background: var(--normal-cell);
+        }
+
+        td.saturday-ot {
+            background: var(--saturday-cell);
+        }
+
+        td.sunday-ot {
+            background: var(--sunday-cell);
+        }
+
+        .checkmark {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .auth-toggle {
+            color: var(--secondary);
+            cursor: pointer;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .auth-toggle:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Pop-up Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-content h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .modal-content button {
+            margin-top: 0.5rem;
+        }
+
+        .modal-content .close-btn {
+            background: var(--text-light);
+        }
+
+        .modal-content .close-btn:hover {
+            background: #4b5563;
+        }
+
+        .ot-list table {
+            margin-top: 1rem;
+        }
+
+        .ot-list th, .ot-list td {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container, .auth-container {
+                padding: 1.5rem;
+            }
+
+            h1, h2 {
+                font-size: 1.75rem;
+            }
+
+            button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.95rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            input[type="text"], input[type="password"], select {
+                padding: 0.6rem;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+                width: 95%;
+            }
+
+            .action-buttons, .table-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <!-- Authentication Container -->
+    <div class="auth-container" id="authContainer">
+        <div id="loginForm">
+            <h1>เข้าสู่ระบบ</h1>
+            <div class="form-group">
+                <label for="loginId">รหัสผู้ใช้</label>
+                <input type="text" id="loginId" placeholder="เช่น U001">
+                <span id="loginIdError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">รหัสผ่าน</label>
+                <input type="password" id="loginPassword" placeholder="รหัสผ่าน">
+                <span id="loginPasswordError" class="error"></span>
+            </div>
+            <button onclick="login()">เข้าสู่ระบบ</button>
+            <div class="auth-toggle" onclick="showRegister()">ยังไม่มีบัญชี? สมัครสมาชิก</div>
+        </div>
+        <div id="registerForm" class="hidden">
+            <h1>สมัครสมาชิก</h1>
+            <div class="form-group">
+                <label for="registerId">รหัสผู้ใช้</label>
+                <input type="text" id="registerId" placeholder="เช่น U001">
+                <span id="registerIdError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">รหัสผ่าน</label>
+                <input type="password" id="registerPassword" placeholder="รหัสผ่าน">
+                <span id="registerPasswordError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">ยืนยันรหัสผ่าน</label>
+                <input type="password" id="confirmPassword" placeholder="ยืนยันรหัสผ่าน">
+                <span id="confirmPasswordError" class="error"></span>
+            </div>
+            <button onclick="register()">สมัครสมาชิก</button>
+            <div class="auth-toggle" onclick="showLogin()">มีบัญชีแล้ว? เข้าสู่ระบบ</div>
+        </div>
+    </div>
+
+    <!-- OT Management Container -->
+    <div class="container hidden" id="mainContainer">
+        <div class="action-buttons">
+            <h1>ระบบจัดการ OT รถ</h1>
+            <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+        </div>
+
+        <!-- OT Input Section -->
+        <div class="form-group">
+            <label for="otEmployeeId">รหัสพนักงาน</label>
+            <input type="text" id="otEmployeeId" placeholder="เช่น E001" oninput="fetchEmployeeDetails()">
+            <span id="otEmployeeIdError" class="error"></span>
+        </div>
+        <div class="form-group">
+            <label for="otEmployeeName">ชื่อพนักงาน</label>
+            <input type="text" id="otEmployeeName" readonly>
+        </div>
+        <div class="form-group">
+            <label for="otSection">แผนก</label>
+            <input type="text" id="otSection" readonly>
+        </div>
+        <div class="form-group">
+            <label>ประเภท OT</label>
+            <div class="action-buttons">
+                <button class="ot-type-btn" onclick="openShiftModal('normal')">OT ปกติ</button>
+                <button class="ot-type-btn" onclick="openShiftModal('saturday')">OT วันเสาร์</button>
+                <button class="ot-type-btn" onclick="openShiftModal('sunday')">OT วันอาทิตย์</button>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button class="delete-btn" onclick="openDeleteOTModal()">ลบ OT รถ</button>
+            <button class="clear-btn" onclick="openClearOTModal()">ล้างข้อมูล OT ทั้งหมด</button>
+        </div>
+
+        <!-- Normal OT Table -->
+        <h2>ตาราง OT ปกติ</h2>
+        <div class="table-actions">
+            <button class="copy-btn" onclick="copyEmployeeIds('normal', 'morning')">คัดลอกกะเช้า (ปกติ)</button>
+            <button class="copy-btn" onclick="copyEmployeeIds('normal', 'night')">คัดลอกกะดึก (ปกติ)</button>
+        </div>
+        <table id="normalOtTable">
+            <thead>
+                <tr>
+                    <th>รหัสพนักงาน</th>
+                    <th>ชื่อ</th>
+                    <th>แผนก</th>
+                    <th class="normal-ot">กะเช้า (17:00-20:00)</th>
+                    <th class="normal-ot">กะดึก (05:00-09:00)</th>
+                </tr>
+            </thead>
+            <tbody id="normalOtTableBody"></tbody>
+        </table>
+
+        <!-- Saturday OT Table -->
+        <h2>ตาราง OT วันเสาร์</h2>
+        <div class="table-actions">
+            <button class="copy-btn" onclick="copyEmployeeIds('saturday', 'morning')">คัดลอกกะเช้า (วันเสาร์)</button>
+            <button class="copy-btn" onclick="copyEmployeeIds('saturday', 'night')">คัดลอกกะดึก (วันเสาร์)</button>
+        </div>
+        <table id="saturdayOtTable">
+            <thead>
+                <tr>
+                    <th>รหัสพนักงาน</th>
+                    <th>ชื่อ</th>
+                    <th>แผนก</th>
+                    <th class="saturday-ot">กะเช้า (17:00-20:00)</th>
+                    <th class="saturday-ot">กะดึก (05:00-09:00)</th>
+                </tr>
+            </thead>
+            <tbody id="saturdayOtTableBody"></tbody>
+        </table>
+
+        <!-- Sunday OT Table -->
+        <h2>ตาราง OT วันอาทิตย์</h2>
+        <div class="table-actions">
+            <button class="copy-btn" onclick="copyEmployeeIds('sunday', 'morning')">คัดลอกกะเช้า (วันอาทิตย์)</button>
+            <button class="copy-btn" onclick="copyEmployeeIds('sunday', 'night')">คัดลอกกะดึก (วันอาทิตย์)</button>
+        </div>
+        <table id="sundayOtTable">
+            <thead>
+                <tr>
+                    <th>รหัสพนักงาน</th>
+                    <th>ชื่อ</th>
+                    <th>แผนก</th>
+                    <th class="sunday-ot">กะเช้า (17:00-20:00)</th>
+                    <th class="sunday-ot">กะดึก (05:00-09:00)</th>
+                </tr>
+            </thead>
+            <tbody id="sundayOtTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Shift Selection Modal -->
+    <div id="shiftModal" class="modal">
+        <div class="modal-content">
+            <h3>เลือกช่วงเวลา</h3>
+            <div class="form-group">
+                <label for="shiftSelect">ช่วงเวลา</label>
+                <select id="shiftSelect">
+                    <option value="morning">กะเช้า (17:00-20:00)</option>
+                    <option value="night">กะดึก (05:00-09:00)</option>
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button onclick="assignOT()">บันทึก</button>
+                <button class="close-btn" onclick="closeModal('shiftModal')">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete OT Modal -->
+    <div id="deleteOTModal" class="modal">
+        <div class="modal-content">
+            <h3>ลบ OT รถ</h3>
+            <div class="ot-list" id="otList"></div>
+            <div class="action-buttons">
+                <button class="close-btn" onclick="closeModal('deleteOTModal')">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear OT Modal -->
+    <div id="clearOTModal" class="modal">
+        <div class="modal-content">
+            <h3>ล้างข้อมูล OT ทั้งหมด</h3>
+            <p>คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูล OT ทั้งหมด?</p>
+            <div class="action-buttons">
+                <button class="clear-btn" onclick="clearAllOT()">ล้างข้อมูล</button>
+                <button class="close-btn" onclick="closeModal('clearOTModal')">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data with error handling
+        let employees = [];
+        let otRecords = [];
+        let users = [];
+        let isAuthenticated = false;
+        try {
+            employees = JSON.parse(localStorage.getItem('employees')) || [];
+            otRecords = JSON.parse(localStorage.getItem('otRecords')) || [];
+            users = JSON.parse(localStorage.getItem('users')) || [];
+            isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+        } catch (e) {
+            console.error('Error loading localStorage:', e);
+            employees = [];
+            otRecords = [];
+            users = [];
+            isAuthenticated = false;
+        }
+
+        // Fallback employee data if empty
+        if (employees.length === 0) {
+            employees = [
+                { id: "E001", name: "สมชาย ใจดี", position: "ผู้จัดการ", section: "ฝ่ายบุคคล" },
+                { id: "E002", name: "สมหญิง รอบคอบ", position: "พนักงาน", section: "ฝ่ายบุคคล" },
+                { id: "E003", name: "สมศักดิ์ ขยัน", position: "หัวหน้างาน", section: "ฝ่ายผลิต" }
+            ];
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
+
+        // Simple hash function for demo purposes (not secure for production)
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash.toString();
+        }
+
+        // Check authentication status on page load
+        window.onload = function() {
+            if (isAuthenticated) {
+                showMainContainer();
+                renderOTTables();
+                updateDeleteOTList();
+            } else {
+                showAuthContainer();
+            }
+        };
+
+        // Show authentication container
+        function showAuthContainer() {
+            document.getElementById('authContainer').classList.remove('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+        }
+
+        // Show main container
+        function showMainContainer() {
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('mainContainer').classList.remove('hidden');
+        }
+
+        // Show login form
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        // Show register form
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        // Validate login inputs
+        function validateLoginInputs(id, password) {
+            let isValid = true;
+            document.getElementById('loginIdError').textContent = '';
+            document.getElementById('loginPasswordError').textContent = '';
+
+            if (!id) {
+                document.getElementById('loginIdError').textContent = 'กรุณากรอกรหัสผู้ใช้';
+                isValid = false;
+            }
+            if (!password) {
+                document.getElementById('loginPasswordError').textContent = 'กรุณากรอกรหัสผ่าน';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        // Validate registration inputs
+        function validateRegisterInputs(id, password, confirmPassword) {
+            let isValid = true;
+            document.getElementById('registerIdError').textContent = '';
+            document.getElementById('registerPasswordError').textContent = '';
+            document.getElementById('confirmPasswordError').textContent = '';
+
+            if (!id) {
+                document.getElementById('registerIdError').textContent = 'กรุณากรอกรหัสผู้ใช้';
+                isValid = false;
+            }
+            if (!password) {
+                document.getElementById('registerPasswordError').textContent = 'กรุณากรอกรหัสผ่าน';
+                isValid = false;
+            }
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'รหัสผ่านไม่ตรงกัน';
+                isValid = false;
+            }
+            if (users.some(user => user.id === id)) {
+                document.getElementById('registerIdError').textContent = 'รหัสผู้ใช้นี้ถูกใช้แล้ว';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        // Register new user
+        function register() {
+            const id = document.getElementById('registerId').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+            if (!validateRegisterInputs(id, password, confirmPassword)) return;
+
+            users.push({
+                id,
+                password: simpleHash(password)
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+            showLogin();
+            document.getElementById('registerId').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        // Login user
+        function login() {
+            const id = document.getElementById('loginId').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!validateLoginInputs(id, password)) return;
+
+            const user = users.find(user => user.id === id && user.password === simpleHash(password));
+            if (user) {
+                isAuthenticated = true;
+                localStorage.setItem('isAuthenticated', 'true');
+                showMainContainer();
+                renderOTTables();
+                updateDeleteOTList();
+                document.getElementById('loginId').value = '';
+                document.getElementById('loginPassword').value = '';
+            } else {
+                document.getElementById('loginPasswordError').textContent = 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+            }
+        }
+
+        // Logout user
+        function logout() {
+            isAuthenticated = false;
+            localStorage.setItem('isAuthenticated', 'false');
+            showAuthContainer();
+        }
+
+        // OT Type Labels for Display
+        const otTypeLabels = {
+            'normal-morning': 'OT ปกติ (กะเช้า 17:00-20:00)',
+            'normal-night': 'OT ปกติ (กะดึก 05:00-09:00)',
+            'saturday-morning': 'OT วันเสาร์ (กะเช้า 17:00-20:00)',
+            'saturday-night': 'OT วันเสาร์ (กะดึก 05:00-09:00)',
+            'sunday-morning': 'OT วันอาทิตย์ (กะเช้า 17 BOTH:00-20:00)',
+            'sunday-night': 'OT วันอาทิตย์ (กะดึก 05:00-09:00)'
+        };
+
+        // Generate UUID for OT records
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Fetch employee details for OT form
+        function fetchEmployeeDetails() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const employeeId = document.getElementById('otEmployeeId').value.trim();
+            const errorElement = document.getElementById('otEmployeeIdError');
+            const nameElement = document.getElementById('otEmployeeName');
+            const sectionElement = document.getElementById('otSection');
+
+            errorElement.textContent = '';
+            nameElement.value = '';
+            sectionElement.value = '';
+
+            if (!employeeId) return;
+
+            const employee = employees.find(emp => emp.id === employeeId);
+            if (employee) {
+                nameElement.value = employee.name || '';
+                sectionElement.value = employee.section || '';
+            } else {
+                errorElement.textContent = 'ไม่พบรหัสพนักงานนี้';
+            }
+        }
+
+        // Validate employee ID
+        function validateEmployeeId(employeeId) {
+            const errorElement = document.getElementById('otEmployeeIdError');
+            errorElement.textContent = '';
+
+            if (!employeeId) {
+                errorElement.textContent = 'กรุณากรอกรหัสพนักงาน';
+                return false;
+            }
+            if (!employees.some(emp => emp.id === employeeId)) {
+                errorElement.textContent = 'ไม่พบรหัสพนักงานนี้';
+                return false;
+            }
+            return true;
+        }
+
+        // Open Shift Modal with OT Type
+        let selectedOtType = '';
+        function openShiftModal(otType) {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const employeeId = document.getElementById('otEmployeeId').value.trim();
+            if (!validateEmployeeId(employeeId)) return;
+
+            selectedOtType = otType;
+            document.getElementById('shiftSelect').value = 'morning';
+            document.getElementById('shiftModal').style.display = 'flex';
+        }
+
+        // Open Delete OT Modal
+        function openDeleteOTModal() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            updateDeleteOTList();
+            document.getElementById('deleteOTModal').style.display = 'flex';
+        }
+
+        // Open Clear OT Modal
+        function openClearOTModal() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            document.getElementById('clearOTModal').style.display = 'flex';
+        }
+
+        // Close Modal
+        function closeModal(modalId) {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Copy Employee IDs for a specific OT type and shift
+        async function copyEmployeeIds(otType, shift) {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const button = event.currentTarget;
+            const originalText = button.textContent;
+
+            try {
+                const employeeIds = otRecords
+                    .filter(record => record.otType === `${otType}-${shift}`)
+                    .map(record => record.employeeId);
+
+                if (employeeIds.length === 0) {
+                    alert(`ไม่มีรหัสพนักงานใน${otTypeLabels[`${otType}-${shift}`]}`);
+                    return;
+                }
+
+                const textToCopy = employeeIds.join('\n');
+                await navigator.clipboard.writeText(textToCopy);
+
+                button.textContent = 'คัดลอกแล้ว';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                alert('เกิดข้อผิดพลาดในการคัดลอก');
+            }
+        }
+
+        // Update Delete OT List
+        function updateDeleteOTList() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const otList = document.getElementById('otList');
+            otList.innerHTML = '';
+
+            if (otRecords.length === 0) {
+                otList.innerHTML = '<p>ไม่พบข้อมูล OT</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>รหัสพนักงาน</th>
+                        <th>ชื่อ</th>
+                        <th>แผนก</th>
+                        <th>ประเภท OT</th>
+                        <th>การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            const tbody = table.querySelector('tbody');
+
+            otRecords.forEach(record => {
+                const employee = employees.find(emp => emp.id === record.employeeId);
+                if (employee) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${employee.id}</td>
+                        <td>${employee.name}</td>
+                        <td>${employee.section || 'ไม่ระบุ'}</td>
+                        <td>${otTypeLabels[record.otType] || record.otType}</td>
+                        <td><button class="delete-btn" onclick="deleteOT('${record.recordId}')">ลบ</button></td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            });
+
+            otList.appendChild(table);
+        }
+
+        // Assign OT
+        function assignOT() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const employeeId = document.getElementById('otEmployeeId').value.trim();
+            const shift = document.getElementById('shiftSelect').value;
+
+            if (!validateEmployeeId(employeeId)) return;
+            if (!selectedOtType) {
+                console.error('No OT type selected');
+                return;
+            }
+
+            const fullOtType = `${selectedOtType}-${shift}`;
+
+            // Remove any existing OT record for this employee
+            otRecords = otRecords.filter(record => record.employeeId !== employeeId);
+
+            // Add new OT record
+            otRecords.push({ 
+                recordId: generateUUID(), 
+                employeeId, 
+                otType: fullOtType
+            });
+
+            try {
+                localStorage.setItem('otRecords', JSON.stringify(otRecords));
+                console.log('OT assigned:', fullOtType, 'for employee:', employeeId);
+            } catch (e) {
+                console.error('Error saving OT records:', e);
+            }
+
+            // Clear form
+            document.getElementById('otEmployeeId').value = '';
+            document.getElementById('otEmployeeName').value = '';
+            document.getElementById('otSection').value = '';
+            selectedOtType = '';
+
+            closeModal('shiftModal');
+            renderOTTables();
+            updateDeleteOTList();
+        }
+
+        // Delete OT record
+        function deleteOT(recordId) {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบ OT รถนี้?')) {
+                otRecords = otRecords.filter(record => record.recordId !== recordId);
+                try {
+                    localStorage.setItem('otRecords', JSON.stringify(otRecords));
+                    console.log('OT record deleted:', recordId);
+                } catch (e) {
+                    console.error('Error saving OT records:', e);
+                }
+                updateDeleteOTList();
+                renderOTTables();
+            }
+        }
+
+        // Clear all OT records
+        function clearAllOT() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูล OT ทั้งหมด?')) {
+                otRecords = [];
+                try {
+                    localStorage.setItem('otRecords', JSON.stringify(otRecords));
+                    console.log('All OT records cleared');
+                } catch (e) {
+                    console.error('Error clearing OT records:', e);
+                }
+                closeModal('clearOTModal');
+                renderOTTables();
+                updateDeleteOTList();
+            }
+        }
+
+        // Render OT tables
+        function renderOTTables() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const normalTbody = document.getElementById('normalOtTableBody');
+            const saturdayTbody = document.getElementById('saturdayOtTableBody');
+            const sundayTbody = document.getElementById('sundayOtTableBody');
+
+            if (!normalTbody || !saturdayTbody || !sundayTbody) {
+                console.error('Table bodies not found');
+                return;
+            }
+
+            normalTbody.innerHTML = '';
+            saturdayTbody.innerHTML = '';
+            sundayTbody.innerHTML = '';
+
+            // Group employees by department
+            const sections = [...new Set(employees.map(emp => emp.section))].filter(section => section);
+            console.log('Rendering tables for sections:', sections);
+
+            sections.forEach(section => {
+                const sectionEmployees = employees.filter(emp => emp.section === section);
+                const sectionOTRecords = otRecords.filter(record => 
+                    sectionEmployees.some(emp => emp.id === record.employeeId)
+                );
+
+                sectionOTRecords.forEach(record => {
+                    const employee = sectionEmployees.find(emp => emp.id === record.employeeId);
+                    if (employee) {
+                        const row = document.createElement('tr');
+                        const isNormal = record.otType.includes('normal');
+                        const isSaturday = record.otType.includes('saturday');
+                        const isSunday = record.otType.includes('sunday');
+                        const isMorning = record.otType.includes('morning');
+                        const isNight = record.otType.includes('night');
+
+                        row.innerHTML = `
+                            <td>${employee.id}</td>
+                            <td>${employee.name}</td>
+                            <td>${section}</td>
+                            <td class="${isNormal ? 'normal-ot' : ''}">${isNormal && isMorning ? '<span class="checkmark">✓</span>' : ''}</td>
+                            <td class="${isNormal ? 'normal-ot' : ''}">${isNormal && isNight ? '<span class="checkmark">✓</span>' : ''}</td>
+                        `;
+
+                        if (isNormal) {
+                            normalTbody.appendChild(row);
+                        } else if (isSaturday) {
+                            row.innerHTML = `
+                                <td>${employee.id}</td>
+                                <td>${employee.name}</td>
+                                <td>${section}</td>
+                                <td class="saturday-ot">${isMorning ? '<span class="checkmark">✓</span>' : ''}</td>
+                                <td class="saturday-ot">${isNight ? '<span class="checkmark">✓</span>' : ''}</td>
+                            `;
+                            saturdayTbody.appendChild(row);
+                        } else if (isSunday) {
+                            row.innerHTML = `
+                                <td>${employee.id}</td>
+                                <td>${employee.name}</td>
+                                <td>${section}</td>
+                                <td class="sunday-ot">${isMorning ? '<span class="checkmark">✓</span>' : ''}</td>
+                                <td class="sunday-ot">${isNight ? '<span class="checkmark">✓</span>' : ''}</td>
+                            `;
+                            sundayTbody.appendChild(row);
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

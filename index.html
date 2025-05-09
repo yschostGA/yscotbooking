@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการพนักงาน</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --danger: #dc2626;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0e7ff, #bfdbfe);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 4rem auto;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 4rem;
+            height: 3px;
+            background: var(--secondary);
+            margin: 0.5rem auto;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"], input[type="file"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: #f9fafb;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-btn {
+            background: var(--accent);
+        }
+
+        .edit-btn:hover {
+            background: #d97706;
+        }
+
+        .delete-btn, .clear-btn, .logout-btn {
+            background: var(--danger);
+        }
+
+        .delete-btn:hover, .clear-btn:hover, .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: var(--card-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .file-upload {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .auth-toggle {
+            color: var(--secondary);
+            cursor: pointer;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .auth-toggle:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container, .auth-container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.95rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            input[type="text"], input[type="file"], input[type="password"] {
+                padding: 0.6rem;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <!-- Authentication Container -->
+    <div class="auth-container" id="authContainer">
+        <div id="loginForm">
+            <h1>เข้าสู่ระบบ</h1>
+            <div class="form-group">
+                <label for="loginId">รหัสผู้ใช้</label>
+                <input type="text" id="loginId" placeholder="เช่น U001">
+                <span id="loginIdError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">รหัสผ่าน</label>
+                <input type="password" id="loginPassword" placeholder="รหัสผ่าน">
+                <span id="loginPasswordError" class="error"></span>
+            </div>
+            <button onclick="login()">เข้าสู่ระบบ</button>
+            <div class="auth-toggle" onclick="showRegister()">ยังไม่มีบัญชี? สมัครสมาชิก</div>
+        </div>
+        <div id="registerForm" class="hidden">
+            <h1>สมัครสมาชิก</h1>
+            <div class="form-group">
+                <label for="registerId">รหัสผู้ใช้</label>
+                <input type="text" id="registerId" placeholder="เช่น U001">
+                <span id="registerIdError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">รหัสผ่าน</label>
+                <input type="password" id="registerPassword" placeholder="รหัสผ่าน">
+                <span id="registerPasswordError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">ยืนยันรหัสผ่าน</label>
+                <input type="password" id="confirmPassword" placeholder="ยืนยันรหัสผ่าน">
+                <span id="confirmPasswordError" class="error"></span>
+            </div>
+            <button onclick="register()">สมัครสมาชิก</button>
+            <div class="auth-toggle" onclick="showLogin()">มีบัญชีแล้ว? เข้าสู่ระบบ</div>
+        </div>
+    </div>
+
+    <!-- Employee Management Container -->
+    <div class="container hidden" id="mainContainer">
+        <div class="action-buttons">
+            <h1>ระบบจัดการพนักงาน</h1>
+            <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+        </div>
+
+        <!-- Employee Management Form -->
+        <div class="form-group">
+            <label for="employeeId">รหัสพนักงาน</label>
+            <input type="text" id="employeeId" placeholder="เช่น E001">
+            <span id="employeeIdError" class="error"></span>
+        </div>
+        <div class="form-group">
+            <label for="employeeName">ชื่อพนักงาน</label>
+            <input type="text" id="employeeName" placeholder="เช่น สมชาย ใจดี">
+            <span id="employeeNameError" class="error"></span>
+        </div>
+        <div class="form-group">
+            <label for="position">ตำแหน่ง</label>
+            <input type="text" id="position" placeholder="เช่น ผู้จัดการ">
+            <span id="positionError" class="error"></span>
+        </div>
+        <div class="form-group">
+            <label for="section">แผนก</label>
+            <input type="text" id="section" placeholder="เช่น ฝ่ายบุคคล">
+            <span id="sectionError" class="error"></span>
+        </div>
+        <div class="action-buttons">
+            <button onclick="addOrUpdateEmployee()">บันทึกข้อมูล</button>
+            <button class="clear-btn" onclick="clearAllEmployees()">ล้างข้อมูลทั้งหมด</button>
+        </div>
+
+        <!-- Excel Upload -->
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="excelFile">อัปโหลดไฟล์ Excel</label>
+            <div class="file-upload">
+                <input type="file" id="excelFile" accept=".xlsx, .xls">
+                <button onclick="uploadExcel()">อัปโหลด</button>
+            </div>
+        </div>
+
+        <!-- Employee Table -->
+        <table id="employeeTable">
+            <thead>
+                <tr>
+                    <th>รหัสพนักงาน</th>
+                    <th>ชื่อพนักงาน</th>
+                    <th>ตำแหน่ง</th>
+                    <th>แผนก</th>
+                    <th>การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="employeeTableBody"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        let employees = JSON.parse(localStorage.getItem('employees')) || [];
+        let otRecords = JSON.parse(localStorage.getItem('otRecords')) || [];
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+        let editIndex = -1;
+
+        // Simple hash function for demo purposes (not secure for production)
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash.toString();
+        }
+
+        // Check authentication status on page load
+        window.onload = function() {
+            if (isAuthenticated) {
+                showMainContainer();
+                renderEmployeeTable();
+            } else {
+                showAuthContainer();
+            }
+        };
+
+        // Show authentication container
+        function showAuthContainer() {
+            document.getElementById('authContainer').classList.remove('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+        }
+
+        // Show main container
+        function showMainContainer() {
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('mainContainer').classList.remove('hidden');
+        }
+
+        // Show login form
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        // Show register form
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        // Validate login inputs
+        function validateLoginInputs(id, password) {
+            let isValid = true;
+            document.getElementById('loginIdError').textContent = '';
+            document.getElementById('loginPasswordError').textContent = '';
+
+            if (!id) {
+                document.getElementById('loginIdError').textContent = 'กรุณากรอกรหัสผู้ใช้';
+                isValid = false;
+            }
+            if (!password) {
+                document.getElementById('loginPasswordError').textContent = 'กรุณากรอกรหัสผ่าน';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        // Validate registration inputs
+        function validateRegisterInputs(id, password, confirmPassword) {
+            let isValid = true;
+            document.getElementById('registerIdError').textContent = '';
+            document.getElementById('registerPasswordError').textContent = '';
+            document.getElementById('confirmPasswordError').textContent = '';
+
+            if (!id) {
+                document.getElementById('registerIdError').textContent = 'กรุณากรอกรหัสผู้ใช้';
+                isValid = false;
+            }
+            if (!password) {
+                document.getElementById('registerPasswordError').textContent = 'กรุณากรอกรหัสผ่าน';
+                isValid = false;
+            }
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'รหัสผ่านไม่ตรงกัน';
+                isValid = false;
+            }
+            if (users.some(user => user.id === id)) {
+                document.getElementById('registerIdError').textContent = 'รหัสผู้ใช้นี้ถูกใช้แล้ว';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        // Register new user
+        function register() {
+            const id = document.getElementById('registerId').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+            if (!validateRegisterInputs(id, password, confirmPassword)) return;
+
+            users.push({
+                id,
+                password: simpleHash(password)
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+            showLogin();
+            document.getElementById('registerId').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        // Login user
+        function login() {
+            const id = document.getElementById('loginId').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!validateLoginInputs(id, password)) return;
+
+            const user = users.find(user => user.id === id && user.password === simpleHash(password));
+            if (user) {
+                isAuthenticated = true;
+                localStorage.setItem('isAuthenticated', 'true');
+                showMainContainer();
+                renderEmployeeTable();
+                document.getElementById('loginId').value = '';
+                document.getElementById('loginPassword').value = '';
+            } else {
+                document.getElementById('loginPasswordError').textContent = 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+            }
+        }
+
+        // Logout user
+        function logout() {
+            isAuthenticated = false;
+            localStorage.setItem('isAuthenticated', 'false');
+            showAuthContainer();
+        }
+
+        // Validate employee inputs
+        function validateEmployeeInputs(id, name, position, section) {
+            let isValid = true;
+            document.getElementById('employeeIdError').textContent = '';
+            document.getElementById('employeeNameError').textContent = '';
+            document.getElementById('positionError').textContent = '';
+            document.getElementById('sectionError').textContent = '';
+
+            if (!id) {
+                document.getElementById('employeeIdError').textContent = 'กรุณากรอกรหัสพนักงาน';
+                isValid = false;
+            }
+            if (!name) {
+                document.getElementById('employeeNameError').textContent = 'กรุณากรอกชื่อพนักงาน';
+                isValid = false;
+            }
+            if (!position) {
+                document.getElementById('positionError').textContent = 'กรุณากรอกตำแหน่ง';
+                isValid = false;
+            }
+            if (!section) {
+                document.getElementById('sectionError').textContent = 'กรุณากรอกแผนก';
+                isValid = false;
+            }
+            if (isValid && editIndex === -1 && employees.some(emp => emp.id === id)) {
+                document.getElementById('employeeIdError').textContent = 'รหัสพนักงานนี้มีอยู่แล้ว';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        // Add or update employee
+        function addOrUpdateEmployee() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const id = document.getElementById('employeeId').value.trim();
+            const name = document.getElementById('employeeName').value.trim();
+            const position = document.getElementById('position').value.trim();
+            const section = document.getElementById('section').value.trim();
+
+            if (!validateEmployeeInputs(id, name, position, section)) return;
+
+            if (editIndex === -1) {
+                employees.push({ id, name, position, section });
+            } else {
+                employees[editIndex] = { id, name, position, section };
+                editIndex = -1;
+            }
+
+            localStorage.setItem('employees', JSON.stringify(employees));
+            document.getElementById('employeeId').value = '';
+            document.getElementById('employeeName').value = '';
+            document.getElementById('position').value = '';
+            document.getElementById('section').value = '';
+            renderEmployeeTable();
+        }
+
+        // Edit employee
+        function editEmployee(index) {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const employee = employees[index];
+            document.getElementById('employeeId').value = employee.id || '';
+            document.getElementById('employeeName').value = employee.name || '';
+            document.getElementById('position').value = employee.position || '';
+            document.getElementById('section').value = employee.section || '';
+            editIndex = index;
+        }
+
+        // Delete employee
+        function deleteEmployee(index) {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบพนักงานนี้?')) {
+                const employeeId = employees[index].id;
+                employees.splice(index, 1);
+                otRecords = otRecords.filter(record => record.employeeId !== employeeId);
+                localStorage.setItem('employees', JSON.stringify(employees));
+                localStorage.setItem('otRecords', JSON.stringify(otRecords));
+                renderEmployeeTable();
+            }
+        }
+
+        // Clear all employees
+        function clearAllEmployees() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลพนักงานทั้งหมด?')) {
+                employees = [];
+                otRecords = [];
+                localStorage.setItem('employees', JSON.stringify(employees));
+                localStorage.setItem('otRecords', JSON.stringify(otRecords));
+                renderEmployeeTable();
+            }
+        }
+
+        // Render employee table
+        function renderEmployeeTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = '';
+            employees.forEach((employee, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${employee.id || 'ไม่ระบุ'}</td>
+                    <td>${employee.name || 'ไม่ระบุ'}</td>
+                    <td>${employee.position || 'ไม่ระบุ'}</td>
+                    <td>${employee.section || 'ไม่ระบุ'}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editEmployee(${index})">แก้ไข</button>
+                        <button class="delete-btn" onclick="deleteEmployee(${index})">ลบ</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Upload Excel file
+        function uploadExcel() {
+            if (!isAuthenticated) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                showAuthContainer();
+                return;
+            }
+
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('กรุณาเลือกไฟล์ Excel');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheet];
+                    const json = XLSX.utils.sheet_to_json(worksheet, { defval: '', blankrows: false });
+
+                    employees = [];
+
+                    json.forEach(row => {
+                        const id = (
+                            row['รหัสพนักงาน'] || 
+                            row['ID'] || 
+                            row['EmployeeID'] || 
+                            row['รหัส'] || 
+                            ''
+                        ).toString().trim();
+                        const name = (
+                            row['ชื่อพนักงาน'] || 
+                            row['Name'] || 
+                            row['EmployeeName'] || 
+                            row['ชื่อ'] || 
+                            ''
+                        ).toString().trim();
+                        const position = (
+                            row['ตำแหน่ง'] || 
+                            row['Position'] || 
+                            row['Role'] || 
+                            ''
+                        ).toString().trim();
+                        const section = (
+                            row['แผนก'] || 
+                            row['Section'] || 
+                            row['Department'] || 
+                            ''
+                        ).toString().trim();
+
+                        if (id && name && !employees.some(emp => emp.id === id)) {
+                            employees.push({ id, name, position, section });
+                        }
+                    });
+
+                    localStorage.setItem('employees', JSON.stringify(employees));
+                    fileInput.value = '';
+                    renderEmployeeTable();
+
+                    if (employees.length === 0) {
+                        alert('ไม่พบข้อมูลพนักงานที่ถูกต้องในไฟล์ Excel กรุณาตรวจสอบว่าไฟล์มีคอลัมน์ "รหัสพนักงาน" และ "ชื่อพนักงาน"');
+                    } else {
+                        alert(`อัปโหลดสำเร็จ: เพิ่ม ${employees.length} รายการ`);
+                    }
+                } catch (error) {
+                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: ' + error.message);
+                }
+            };
+            reader.onerror = function() {
+                alert('ไม่สามารถอ่านไฟล์ Excel ได้');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>
